@@ -1,0 +1,9 @@
+*.pyc
+*.vscode
+*.env
+*__pycache__
+*cache
+*.sqlite3
+*.egg-info/
+*venv/
+*.bat
