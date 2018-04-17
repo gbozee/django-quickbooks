@@ -24,7 +24,6 @@ def quickbooks_auth_response(request):
     if status < 400:
         QuickbooksStorage.save_token(realm_id, **response)
     response.update(status=status)
-    print(response)
     return JsonResponse(response)
 
 

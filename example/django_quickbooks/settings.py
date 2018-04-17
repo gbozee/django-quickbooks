@@ -122,8 +122,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-QUICKBOOKS_CLIENT_ID = os.environ.get('QUICKBOOKS_CLIENT_ID')
-QUICKBOOKS_CLIENT_SECRET = os.environ.get('QUICKBOOKS_CLIENT_SECRET')
+QUICKBOOKS_CLIENT_ID = os.environ.get('QUICKBOOKS_CLIENT_ID','client_id')
+QUICKBOOKS_CLIENT_SECRET = os.environ.get('QUICKBOOKS_CLIENT_SECRET','client_secret')
 # QUICKBOOKS_REDIRECT_URL = os.environ.get('QUICKBOOKS_REDIRECT_URL')
 QUICKBOOKS_SCOPES = "contacts timeline files"
 QUICKBOOKS_API_KEY = os.environ.get('QUICKBOOKS_API_KEY')

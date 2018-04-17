@@ -26,7 +26,6 @@ class QuickbooksAPI(object):
         self.base_url = settings.QUICKBOOKS_BASE_URL
         self.call_url = self.base_url
         self.view_url = redirect_uri
-
         if not self.client_id and self.client_secret and self.redirect_url:
             raise QuickbooksAPIException(
                 ("Please remember to set the QUICKBOOKS_CLIENT_ID "
@@ -52,11 +51,11 @@ class QuickbooksAPI(object):
         data = options[grant_type]
         params = {
             "grant_type": data[0],
-            # "client_id": self.client_id,
-            # "client_secret": self.client_secret,
             "redirect_uri": self.redirect_url,
             data[1]: param
         }
+        if data[0] == 'refresh_token':
+            params.pop('redirect_uri')
         headers = {
             'Accept': 'application/json',
             'content-type': 'application/x-www-form-urlencoded',
@@ -65,6 +64,8 @@ class QuickbooksAPI(object):
         response = self.make_request(
             'POST', url, data=params, headers=headers)
         if response.status_code >= 400:
+            import pdb
+            pdb.set_trace()
             response.raise_for_status()
         return response.json(), response.status_code
 
@@ -103,22 +104,31 @@ class QuickbooksAPI(object):
             url = self.call_url
         return "{}{}".format(url, path)
 
-    def fetch_token_from_db(self):
+    @classmethod
+    def get_quickbook_token(cls):
         from .models import QuickbooksStorage
 
-        result = QuickbooksStorage.get_token()
+        return QuickbooksStorage.get_token()
+
+    def save_fetched_token(self, result):
+        from .models import QuickbooksStorage
+
+        token, status = self.refresh_token(result.refresh_token)
+        if status < 400:
+            result = QuickbooksStorage.save_token(
+                realmId=result.realmId, **token)
+            return result
+        raise QuickbooksAPIException("code: {}, description: {}".format(
+            token['error'], token['error_description']))
+
+    def fetch_token_from_db(self):
+        result = QuickbooksAPI.get_quickbook_token()
         if not result:
             raise QuickbooksAPIException(
                 ("Token not available, "
                  "please visit the {} url.").format(self.view_url))
         if result.has_expired():
-            token, status = self.refresh_token(result.refresh_token)
-            if status < 400:
-                result = QuickbooksStorage.save_token(
-                    realmId=result.realmId, **token)
-            else:
-                raise QuickbooksAPIException("code: {}, description: {}".format(
-                    token['error'], token['error_description']))
+            result = self.save_fetched_token(result.refresh_token)
         return result.access_token, result.realmId
 
     @property
@@ -140,15 +150,7 @@ class QuickbooksAPI(object):
     def create_customer(self, **kwargs):
         # data is sent in the following form
         """
-        {
-            "email":"james@example.com,
-            "full_name":"danny novak",
-            "phone_number":"+23470322322",
-            "location":{
-                "country": "Nigeria",
-                "address": "101 igiolugiwej wo",
-            }
-        }
+
         """
         data = {
             "BillAddr": {
@@ -210,6 +212,6 @@ def parse_xml(string):
 
     }
     for child in value[0]:
-        rr = child.tag.replace("{http://schema.intuit.com/finance/v3}","")
+        rr = child.tag.replace("{http://schema.intuit.com/finance/v3}", "")
         data[rr] = child.text
     return data
