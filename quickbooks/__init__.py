@@ -128,7 +128,7 @@ class QuickbooksAPI(object):
                 ("Token not available, "
                  "please visit the {} url.").format(self.view_url))
         if result.has_expired():
-            result = self.save_fetched_token(result.refresh_token)
+            result = self.save_fetched_token(result)
         return result.access_token, result.realmId
 
     @property
