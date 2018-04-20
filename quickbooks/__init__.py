@@ -197,8 +197,7 @@ class QuickbooksAPI(object):
         }
         response = self.call_api('POST', 'salesreceipt', data=data)
         if response.status_code >= 400:
-            import pdb
-            pdb.set_trace()
+            print(response.text)
             response.raise_for_status()
         result = parse_xml(response.text)
         return result["Id"]
