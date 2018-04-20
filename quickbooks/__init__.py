@@ -168,7 +168,7 @@ class QuickbooksAPI(object):
         }
         response = self.call_api('POST', 'customer', data=data)
         if response.status_code >= 400:
-            print(response.json())
+            print(response.text)
             response.raise_for_status()
         result = parse_xml(response.text)
         return {'id': result['Id'], 'name': result['DisplayName']}
