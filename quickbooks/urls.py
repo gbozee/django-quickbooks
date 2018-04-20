@@ -7,11 +7,15 @@ from django.conf import settings as django_settings
 from .models import QuickbooksStorage
 
 
-def quickbooks_auth_response(request):
+def get_redirect_uri(request):
     url = request.build_absolute_uri(reverse('quickbooks:code'))
     if not django_settings.DEBUG:
-        url = url.replace('http://','https://')
-    hub = QuickbooksAPI(url)
+        url = url.replace('http://', 'https://')
+    return url
+
+
+def quickbooks_auth_response(request):
+    hub = QuickbooksAPI(get_redirect_uri(request))
     code = request.GET.get('code')
     error = request.GET.get('error')
     state = request.GET.get('state')
@@ -32,7 +36,7 @@ def quickbooks_auth_response(request):
 
 
 def quickbooks_authorize(request):
-    hub = QuickbooksAPI(request.build_absolute_uri(reverse('quickbooks:code')))
+    hub = QuickbooksAPI(get_redirect_uri(request))
 
     return HttpResponse('''
     <a href="{}"><img src="https://developer.intuit.com/docs/@api/deki/files/4996/c2qb_green_btn_med_default.png?revision=1&size=bestfit&width=103&height=35"/></a>
