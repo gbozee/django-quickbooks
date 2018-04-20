@@ -65,6 +65,7 @@ class QuickbooksAPI(object):
             'POST', url, data=params, headers=headers)
         if response.status_code >= 400:
             print(response.json())
+            print(params)
             response.raise_for_status()
         return response.json(), response.status_code
 
