@@ -3,11 +3,15 @@ from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import reverse
 from django.views.decorators.csrf import csrf_exempt
 from . import QuickbooksAPI, settings
+from django.conf import settings as django_settings
 from .models import QuickbooksStorage
 
 
 def quickbooks_auth_response(request):
-    hub = QuickbooksAPI(request.build_absolute_uri(reverse('quickbooks:code')))
+    url = request.build_absolute_uri(reverse('quickbooks:code'))
+    if not django_settings.DEBUG:
+        url = url.replace('http://','https://')
+    hub = QuickbooksAPI(url)
     code = request.GET.get('code')
     error = request.GET.get('error')
     state = request.GET.get('state')
