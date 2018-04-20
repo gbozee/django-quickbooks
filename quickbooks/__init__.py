@@ -64,8 +64,6 @@ class QuickbooksAPI(object):
         response = self.make_request(
             'POST', url, data=params, headers=headers)
         if response.status_code >= 400:
-            import pdb
-            pdb.set_trace()
             response.raise_for_status()
         return response.json(), response.status_code
 
