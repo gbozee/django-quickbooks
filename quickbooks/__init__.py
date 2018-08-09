@@ -186,6 +186,7 @@ class QuickbooksAPI(object):
             ):
                 return self.get_customer_by_email(kwargs["email"])
             print(response.text)
+            logger.error("Failed to create new user", exec_info=True)
             response.raise_for_status()
         result = response.json()["Customer"]
         return {"id": result["Id"], "name": result["DisplayName"]}
@@ -195,6 +196,8 @@ class QuickbooksAPI(object):
         response = self.call_api("GET", "query", params={"query": query})
         if response.status_code >= 400:
             print(response.text)
+            logger.error("Failed to find user by email", exec_info=True)
+
             response.raise_for_status()
         result = response.json()["QueryResponse"]["Customer"]
         if len(result) > 0:
@@ -224,7 +227,6 @@ class QuickbooksAPI(object):
         }
         response = self.call_api("POST", "salesreceipt", data=data)
         if response.status_code >= 400:
-            text = response.text
             logger.error("Failed to create sales receipt", exec_info=True)
             response.raise_for_status()
         result = response.json()["SalesReceipt"]
