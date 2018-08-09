@@ -8,7 +8,9 @@ import requests
 from urllib.parse import urlparse, urlencode, quote
 import base64
 from xml.etree import ElementTree
+import logging
 
+logger = logging.getLogger(__name__)
 
 def stringToBase64(s):
     return base64.b64encode(bytes(s, 'utf-8')).decode()
@@ -196,6 +198,8 @@ class QuickbooksAPI(object):
         }
         response = self.call_api('POST', 'salesreceipt', data=data)
         if response.status_code >= 400:
+            text = response.text
+            logger.error("Failed to create sales receipt",exec_info=True)
             response.raise_for_status()
         result = parse_xml(response.text)
         return result["Id"]
