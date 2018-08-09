@@ -21,18 +21,17 @@ class QuickbooksAPIException(Exception):
 
 
 class QuickbooksAPI(object):
-    def __init__(self, redirect_uri):
+    def __init__(self, *args):
         self.client_id = settings.QUICKBOOKS_CLIENT_ID
         self.client_secret = settings.QUICKBOOKS_CLIENT_SECRET
         self.redirect_url = settings.QUICKBOOKS_REDIRECT_URL
         self.base_url = settings.QUICKBOOKS_BASE_URL
         self.call_url = self.base_url
-        self.view_url = redirect_uri
+        self.view_url = self.redirect_url
         if not self.client_id and self.client_secret and self.redirect_url:
             raise QuickbooksAPIException(
                 ("Please remember to set the QUICKBOOKS_CLIENT_ID "
                     "AND QUICKBOOKS_CLIENT_SECRET env"))
-        self.redirect_url = self.redirect_url + redirect_uri
 
     def get_authorization_url(self):
         path = self.auth_path("/connect/oauth2")
@@ -66,8 +65,8 @@ class QuickbooksAPI(object):
         response = self.make_request(
             'POST', url, data=params, headers=headers)
         if response.status_code >= 400:
-            import pdb
-            pdb.set_trace()
+            print(response.json())
+            print(params)
             response.raise_for_status()
         return response.json(), response.status_code
 
@@ -170,6 +169,7 @@ class QuickbooksAPI(object):
         }
         response = self.call_api('POST', 'customer', data=data)
         if response.status_code >= 400:
+            print(response.text)
             response.raise_for_status()
         result = parse_xml(response.text)
         return {'id': result['Id'], 'name': result['DisplayName']}
