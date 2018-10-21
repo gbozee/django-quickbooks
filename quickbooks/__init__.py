@@ -48,14 +48,15 @@ class QuickbooksAPI(object):
     def auth_path(self, path):
         return "https://appcenter.intuit.com" + path
 
+    def get_authorization_header(self):
+        return "Basic " + stringToBase64(self.client_id + ":" + self.client_secret)
+
     def _get_token_details(self, grant_type, param):
         options = {
             "authorize": ("authorization_code", "code", "token_endpoint"),
             "refresh": ("refresh_token", "refresh_token", "token_endpoint"),
         }
-        authorization_header = "Basic " + stringToBase64(
-            self.client_id + ":" + self.client_secret
-        )
+        authorization_header = self.get_authorization_header()
         data = options[grant_type]
         params = {
             "grant_type": data[0],
@@ -178,6 +179,7 @@ class QuickbooksAPI(object):
         }
         response = self.call_api("POST", "customer", data=data)
         if response.status_code >= 400:
+            print(response.json())
             errors = response.json()["Fault"]["Error"]
             error = errors[0]
             if (
@@ -228,7 +230,9 @@ class QuickbooksAPI(object):
         response = self.call_api("POST", "salesreceipt", data=data)
         if response.status_code >= 400:
             print(response.text)
-            logger.error("Failed to create sales receipt", stack_info=True, exc_info=True)
+            logger.error(
+                "Failed to create sales receipt", stack_info=True, exc_info=True
+            )
             response.raise_for_status()
         result = response.json()["SalesReceipt"]
         return result["Id"]
