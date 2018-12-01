@@ -23,11 +23,13 @@ class QuickbooksAPIException(Exception):
 
 
 class QuickbooksAPI(object):
-    def __init__(self, *args):
+    def __init__(self, url=""):
         self.client_id = settings.QUICKBOOKS_CLIENT_ID
         self.client_secret = settings.QUICKBOOKS_CLIENT_SECRET
         self.redirect_url = settings.QUICKBOOKS_REDIRECT_URL
-        self.base_url = settings.QUICKBOOKS_BASE_URL
+        self.base_url = url
+        if not self.base_url:
+            self.base_url = settings.QUICKBOOKS_BASE_URL
         self.call_url = self.base_url
         self.view_url = self.redirect_url
         if not self.client_id and self.client_secret and self.redirect_url:
@@ -180,6 +182,8 @@ class QuickbooksAPI(object):
         response = self.call_api("POST", "customer", data=data)
         if response.status_code >= 400:
             print(response.json())
+            print(response.request.url)
+            keys = [{key.lower():key} for key in response.json()]
             errors = response.json()["Fault"]["Error"]
             error = errors[0]
             if (
